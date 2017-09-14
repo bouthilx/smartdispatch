@@ -2,7 +2,9 @@
 Usage
 =====
 
-.. autoprogram:: scripts/smart-dispatch:get_parser()
+.. argparse:: 
+  :filename: ../scripts/smart-dispatch
+  :func: get_parser
   :prog: smart-dispatch
 
 
