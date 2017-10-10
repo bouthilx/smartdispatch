@@ -55,6 +55,7 @@ def test_slugify():
     for arg, expected in testing_arguments:
         assert_equal(utils.slugify(arg), expected)
 
+
 command_output = """\
 Server             Max   Tot   Que   Run   Hld   Wat   Trn   Ext   Com Status
 ----------------   ---   ---   ---   ---   ---   ---   ---   ---   --- ----------
@@ -69,25 +70,28 @@ slurm_command = """\
 
 
 class ClusterIdentificationTest(unittest.TestCase):
+    server_names = ["hades", "m", "guil", "helios", "hades"]
+    clusters = ["hades", "mammouth", "guillimin", "helios"]
+    command_output = command_output
+
+    def __init__(self, *args, **kwargs):
+        super(ClusterIdentificationTest, self).__init__(*args, **kwargs)
+        self.detect_cluster = utils.detect_cluster
 
     def test_detect_cluster(self):
-        server_name = ["hades", "m", "guil", "helios", "hades"]
-        clusters = ["hades", "mammouth", "guillimin", "helios"]
 
-        for name, cluster in zip(server_name, clusters):
-            with patch('smartdispatch.utils.Popen') as mock_communicate:
-                mock_communicate.return_value.communicate.return_value = (command_output.format(name),)
-                self.assertEquals(utils.detect_cluster(), cluster)
+        with patch('smartdispatch.utils.Popen') as MockPopen:
+            mock_process = MockPopen.return_value
+            for name, cluster in zip(self.server_names, self.clusters):
+                mock_process.communicate.return_value = (
+                   self.command_output.format(name),)
+                self.assertEquals(self.detect_cluster(), cluster)
 
-    # def test_detect_mila_cluster(self):
-    #     with patch('smartdispatch.utils.Popen') as mock_communicate:
-    #         mock_communicate.return_value.communicate.side_effect = OSError
-    #         self.assertIsNone(utils.detect_cluster())
 
-    def test_get_slurm_cluster_name(self):
-        clusters = ["graham", "cedar", "mila"]
+class SlurmClusterIdentificationTest(ClusterIdentificationTest):
+    server_names = clusters = ["graham", "cedar", "mila"]
+    command_output = slurm_command
 
-        for cluster in clusters:
-            with patch('smartdispatch.utils.Popen') as mock_communicate:
-                mock_communicate.return_value.communicate.return_value = (slurm_command.format(cluster),)
-                self.assertEquals(utils.get_slurm_cluster_name(), cluster)
+    def __init__(self, *args, **kwargs):
+        super(SlurmClusterIdentificationTest, self).__init__(*args, **kwargs)
+        self.detect_cluster = utils.get_slurm_cluster_name
