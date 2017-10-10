@@ -295,12 +295,15 @@ class TestSlurmQueue(object):
             self.dummy_pbs = dummy_generator.pbs_list
 
     def test_ppn_ncpus(self):
-        assert_true("ppn" not in str(self.pbs[0]))
-        assert_true("ncpus" in str(self.pbs[0]))
         assert_true("ppn" in str(self.dummy_pbs[0]))
         assert_true("ncpus" not in str(self.dummy_pbs[0]))
+        assert_true("ppn" not in str(self.pbs[0]))
+        assert_true("ncpus" in str(self.pbs[0]))
+
 
     def test_gpus_naccelerators(self):
+        assert_true("gpus" in str(self.dummy_pbs[0]))
+        assert_true("naccelerators" not in str(self.dummy_pbs[0]))
         assert_true("gpus" not in str(self.pbs[0]))
         assert_true("naccelerators" in str(self.pbs[0]))
 

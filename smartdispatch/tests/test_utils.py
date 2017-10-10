@@ -2,10 +2,9 @@
 import unittest
 try:
     from mock import patch
-    import mock
 except ImportError:
     from unittest.mock import patch
-    import unittest.mock
+
 from nose.tools import assert_equal, assert_true
 from numpy.testing import assert_array_equal
 import subprocess

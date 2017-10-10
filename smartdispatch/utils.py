@@ -133,7 +133,10 @@ def detect_cluster():
     return cluster_name
 
 def get_slurm_cluster_name():
-    stdout = Popen("sacctmgr list cluster", stdout=PIPE, shell=True).communicate()[0]
+    try:
+        stdout = Popen("sacctmgr list cluster", stdout=PIPE, shell=True).communicate()[0]
+    except OSError:
+        return None
     stdout = stdout.decode()
     cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
     return cluster_name
