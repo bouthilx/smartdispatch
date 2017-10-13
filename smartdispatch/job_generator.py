@@ -189,13 +189,40 @@ class HeliosJobGenerator(JobGenerator):
             # Remove forbidden ppn option. Default is 2 cores per gpu.
             pbs.resources['nodes'] = re.sub(":ppn=[0-9]+", "", pbs.resources['nodes'])
 
+
 class SlurmJobGenerator(JobGenerator):
+
+    def __init__(self, *args, **kwargs):
+        super(SlurmJobGenerator, self).__init__(*args, **kwargs)
+
+    def _adapt_options(self, pbs):
+        pass
+
+    def _adapt_commands(self, pbs):
+        pass
+
+    def _adapt_resources(self, pbs):
+        # Set proper option for gpus
+        match = re.match(".*gpus=([0-9]+)", pbs.resources['nodes'])
+        if match:
+            gpus = match.group(1)
+            pbs.add_resources(naccelerators=gpus)
+            pbs.resources['nodes'] = re.sub(":gpus=[0-9]+", "",
+                                            pbs.resources['nodes'])
+
+        # Set proper option for cpus
+        match = re.match(".*ppn=([0-9]+)", pbs.resources['nodes'])
+        if match:
+            ppn = match.group(1)
+            pbs.add_resources(ncpus=ppn)
+            pbs.resources['nodes'] = re.sub("ppn=[0-9]+", "", pbs.resources['nodes'])
+
+    def _adapt_variable_names(self, pbs):
+        pass
 
     def _add_cluster_specific_rules(self):
         for pbs in self.pbs_list:
-            gpus = re.match(".*gpus=([0-9]+)", pbs.resources['nodes']).group(1)
-            ppn = re.match(".*ppn=([0-9]+)", pbs.resources['nodes']).group(1)
-            pbs.resources['nodes'] = re.sub("ppn=[0-9]+", "", pbs.resources['nodes'])
-            pbs.resources['nodes'] = re.sub(":gpus=[0-9]+", "", pbs.resources['nodes'])
-            pbs.add_resources(naccelerators=gpus)
-            pbs.add_resources(ncpus=ppn)
+            self._adapt_options(pbs)
+            self._adapt_resources(pbs)
+            self._adapt_commands(pbs)
+            self._adapt_variable_names(pbs)
