@@ -75,10 +75,10 @@ class PBS(object):
 
         for option_name, option_value in options.items():
             if len(option_name) == 1:
-                self.sbatch_options["-" + option_name] = option_value
+                dash = "-"
             else:
-                self.sbatch_options["--" + option_name] = option_value
-            self.sbatch_options[option_name] = option_value
+                dash = "--"
+            self.sbatch_options[dash + option_name] = option_value
 
     def add_resources(self, **resources):
         """ Adds resources to this PBS file.

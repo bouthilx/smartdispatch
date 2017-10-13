@@ -40,9 +40,12 @@ class TestPBS(unittest.TestCase):
     def test_add_sbatch_options(self):
         self.pbs.add_sbatch_options(a="value1")
         assert_equal(self.pbs.sbatch_options["-a"], "value1")
+        assert_equal(len(self.pbs.sbatch_options), 1)
+        self.pbs.sbatch_options.pop("-a")
         self.pbs.add_sbatch_options(option1="value2", option2="value3")
         assert_equal(self.pbs.sbatch_options["--option1"], "value2")
         assert_equal(self.pbs.sbatch_options["--option2"], "value3")
+        assert_equal(len(self.pbs.sbatch_options), 2)
 
     def test_add_resources(self):
         assert_equal(len(self.pbs.resources), 1)
