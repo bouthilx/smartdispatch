@@ -287,7 +287,10 @@ class TestSlurmQueue(unittest.TestCase):
         self.nb_gpus_per_node = 2
         self.queue = Queue("slurm", "mila", self.walltime, self.nb_cores_per_node, self.nb_gpus_per_node, self.mem_per_node)
 
-        self.commands = ["echo 1", "echo 2", "echo 3", "echo 4"]
+        self.nb_of_commands = 4
+        self.commands = ["echo %d; echo $PBS_JOBID; echo $PBS_WALLTIME" % i
+                         for i in range(self.nb_of_commands)]
+
         job_generator = SlurmJobGenerator(self.queue, self.commands)
         self.pbs = job_generator.pbs_list
 
@@ -310,6 +313,28 @@ class TestSlurmQueue(unittest.TestCase):
     def test_queue(self):
         assert_true("PBS -q" in str(self.dummy_pbs[0]))
         assert_true("PBS -q" not in str(self.pbs[0]))
+
+    def test_outputs(self):
+        for std in ['-e', '-o']:
+            value = self.dummy_pbs[0].options[std]
+            assert_true("$PBS_JOBID" in value, 
+                        "$PBS_JOBID should be present in option %s: %s" %
+                        (std, value))
+
+            value = self.pbs[0].options[std]
+            assert_true("$PBS_JOBID" not in value, 
+                        "$PBS_JOBID not should be present in option %s: %s" %
+                        (std, value))
+            assert_true("%A" in value, 
+                        "%%A should be present in option %s: %s" %
+                        (std, value))
+
+    def test_job_id_env_var(self):
+        self.assertIn("$PBS_JOBID", str(self.dummy_pbs[0]))
+        self.assertNotIn("$SLURM_JOB_ID", str(self.dummy_pbs[0])) 
+
+        self.assertNotIn("$PBS_JOBID", str(self.pbs[0]))
+        self.assertIn("$SLURM_JOB_ID", str(self.pbs[0]))
 
 
 class TestJobGeneratorFactory(object):

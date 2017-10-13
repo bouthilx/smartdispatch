@@ -76,6 +76,11 @@ def main():
 
         # Get job and node ID
         job_id = os.environ.get('PBS_JOBID', 'undefined')
+
+        # It might be a slurm scheduler
+        if job_id == 'undefined':
+            job_id = os.environ.get('SLURM_JOB_ID', 'undefined')
+
         node_name = os.environ.get('HOSTNAME', 'undefined')
 
         with open(stdout_filename, 'a') as stdout_file:

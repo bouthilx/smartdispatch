@@ -200,6 +200,12 @@ class SlurmJobGenerator(JobGenerator):
         if "-q" in pbs.options:
             del pbs.options["-q"]
 
+        # SBATCH does not interpret options, they can only contain %A if we
+        # want to include job's name and %a to include job array's index
+        for option in ['-o', '-e']:
+            pbs.options[option] = re.sub('"\$PBS_JOBID"', '%A',
+                                         pbs.options[option])
+
     def _adapt_commands(self, pbs):
         pass
 
@@ -220,7 +226,9 @@ class SlurmJobGenerator(JobGenerator):
             pbs.resources['nodes'] = re.sub("ppn=[0-9]+", "", pbs.resources['nodes'])
 
     def _adapt_variable_names(self, pbs):
-        pass
+        for command_id, command in enumerate(pbs.commands):
+            pbs.commands[command_id] = command = re.sub(
+                "\$PBS_JOBID", "$SLURM_JOB_ID", command)
 
     def _add_cluster_specific_rules(self):
         for pbs in self.pbs_list:
