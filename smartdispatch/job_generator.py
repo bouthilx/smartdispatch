@@ -196,7 +196,9 @@ class SlurmJobGenerator(JobGenerator):
         super(SlurmJobGenerator, self).__init__(*args, **kwargs)
 
     def _adapt_options(self, pbs):
-        pass
+        # Remove queue, there is no queue in Slurm
+        if "-q" in pbs.options:
+            del pbs.options["-q"]
 
     def _adapt_commands(self, pbs):
         pass

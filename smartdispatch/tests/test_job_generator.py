@@ -276,7 +276,8 @@ class TestHadesQueue(object):
         assert_true("ppn=6" in str(self.pbs8[0]))
         assert_true("ppn=2" in str(self.pbs8[1]))
 
-class TestSlurmQueue(object):
+
+class TestSlurmQueue(unittest.TestCase):
 
     def setUp(self):
         self.walltime = "10:00"
@@ -300,12 +301,16 @@ class TestSlurmQueue(object):
         assert_true("ppn" not in str(self.pbs[0]))
         assert_true("ncpus" in str(self.pbs[0]))
 
-
     def test_gpus_naccelerators(self):
         assert_true("gpus" in str(self.dummy_pbs[0]))
         assert_true("naccelerators" not in str(self.dummy_pbs[0]))
         assert_true("gpus" not in str(self.pbs[0]))
         assert_true("naccelerators" in str(self.pbs[0]))
+
+    def test_queue(self):
+        assert_true("PBS -q" in str(self.dummy_pbs[0]))
+        assert_true("PBS -q" not in str(self.pbs[0]))
+
 
 class TestJobGeneratorFactory(object):
 
