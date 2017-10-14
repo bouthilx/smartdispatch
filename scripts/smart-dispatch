@@ -23,22 +23,43 @@ LOGS_FOLDERNAME = "SMART_DISPATCH_LOGS"
 CLUSTER_NAME = utils.detect_cluster()
 AVAILABLE_QUEUES = get_available_queues(CLUSTER_NAME)
 LAUNCHER = utils.get_launcher(CLUSTER_NAME)
+print "LAUNCHER", LAUNCHER
 
 # Autoresume settings.
 TIMEOUT_EXIT_CODE = 124
 AUTORESUME_TRIGGER_AFTER = '$(($PBS_WALLTIME - 60))'  # By default, 60s before the maximum walltime.
 AUTORESUME_WORKER_CALL_PREFIX = 'timeout -s TERM {trigger_after} '.format(trigger_after=AUTORESUME_TRIGGER_AFTER)
 AUTORESUME_WORKER_CALL_SUFFIX = ' WORKER_PIDS+=" $!"'
-AUTORESUME_PROLOG = 'WORKER_PIDS=""'
+AUTORESUME_PROLOG = """
+WORKER_PIDS=""
+VERBOSE={verbose}
+"""
 AUTORESUME_EPILOG = """\
 NEED_TO_RESUME=false
+if [ $VERBOSE = true ]; then
+    echo NEED_TO_RESUME=$NEED_TO_RESUME
+    echo WORKER_PIDS=$WORKER_PIDS
+fi
 for WORKER_PID in $WORKER_PIDS; do
+    if [ $VERBOSE = true ]; then
+        echo WORKER_PID=$WORKER_PID
+    fi
     wait "$WORKER_PID"
     RETURN_CODE=$?
+    if [ $VERBOSE = true ]; then
+        echo "RETURN_CODE is $RETURN_CODE while " \
+             "timeout_exit_code is {timeout_exit_code}"
+    fi
     if [ $RETURN_CODE -eq {timeout_exit_code} ]; then
         NEED_TO_RESUME=true
     fi
+    if [ $VERBOSE = true ]; then
+        echo NEED_TO_RESUME=$NEED_TO_RESUME
+    fi
 done
+if [ $VERBOSE = true ]; then
+    echo NEED_TO_RESUME=$NEED_TO_RESUME
+fi
 if [ "$NEED_TO_RESUME" = true ]; then
     echo "Autoresuming using: {{launcher}} $PBS_FILENAME"
     sd-launch-pbs --launcher {{launcher}} $PBS_FILENAME {{path_job}}
@@ -164,8 +185,12 @@ def main():
     prolog = []
     epilog = ['wait']
     if args.autoresume:
-        prolog = [AUTORESUME_PROLOG]
-        epilog = [AUTORESUME_EPILOG.format(launcher=LAUNCHER if args.launcher is None else args.launcher, path_job=path_job)]
+        prolog = [
+            AUTORESUME_PROLOG.format(verbose=str(args.verbose >= 2).lower())]
+        epilog = [
+            AUTORESUME_EPILOG.format(
+                launcher=LAUNCHER if args.launcher is None else args.launcher,
+                path_job=path_job)]
 
     job_generator = job_generator_factory(queue, commands, prolog, epilog, command_params, CLUSTER_NAME, path_job)
 
@@ -191,6 +216,13 @@ def main():
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '-v', '--verbose', action='count', default=0,
+        help="Print informations about the process.\n"
+             "     -v: INFO\n"
+             "     -vv: DEBUG")
+
     parser.add_argument('-q', '--queueName', required=True, help='Queue used (ex: qwork@mp2, qfat256@mp2, gpu_1)')
     parser.add_argument('-n', '--batchName', required=False, help='The name of the batch. Default: The commands launched.')
     parser.add_argument('-t', '--walltime', required=False, help='Set the estimated running time of your jobs using the DD:HH:MM:SS format. Note that they will be killed when this time limit is reached.')
@@ -230,6 +262,13 @@ def parse_arguments():
             parser.error("Unknown queue, --coresPerNode/--gpusPerNode and --walltime must be set.")
         if args.coresPerCommand < 1:
             parser.error("coresPerNode must be at least 1")
+
+    if args.verbose == 0:
+        logging.basicConfig(level=logging.WARNING)
+    elif args.verbose == 1:
+        logging.basicConfig(level=logging.INFO)
+    elif args.verbose >= 2:
+        logging.basicConfig(level=logging.DEBUG)
 
     return args
 
