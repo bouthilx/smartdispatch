@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
+import string
+import subprocess
 
 import unittest
 try:
@@ -10,7 +12,6 @@ except ImportError:
 from nose.tools import assert_equal, assert_true
 
 from numpy.testing import assert_array_equal
-import subprocess
 
 from smartdispatch import utils
 
@@ -152,3 +153,69 @@ class SlurmClusterIdentificationTest(ClusterIdentificationTest):
     def __init__(self, *args, **kwargs):
         super(SlurmClusterIdentificationTest, self).__init__(*args, **kwargs)
         self.detect_cluster = utils.get_slurm_cluster_name
+
+
+class TestGetLauncher(unittest.TestCase):
+    longMessage = True
+
+    N_RANDOM = 10
+    RANDOM_SIZE = (2, 10)
+
+    CLUSTER_NAMES = ["hades", "mammouth", "guillimin", "helios"]
+
+    def _get_random_string(self):
+        return ''.join([random.choice(string.lowercase)
+                        for i in xrange(random.randint(*self.RANDOM_SIZE))])
+
+    def _assert_launcher(self, desired, cluster_name):
+        if cluster_name in utils.MSUB_CLUSTERS:
+            desired = "msub"
+
+        self.assertEqual(
+            desired, utils.get_launcher(cluster_name),
+            msg="for cluster %s" % cluster_name)
+
+    def test_get_launcher(self):
+        self.assertEqual("msub", utils.get_launcher("helios"))
+
+        # For supported launcher and random ones...
+        with patch('smartdispatch.utils.distutils') as mock_distutils:
+
+            for launcher in utils.SUPPORTED_LAUNCHERS:
+
+                mock_distutils.spawn.find_executable.side_effect = (
+                    lambda command: launcher if launcher == command else None)
+
+                for cluster_name in self.CLUSTER_NAMES:
+                    self._assert_launcher(launcher, cluster_name)
+
+                for idx in range(self.N_RANDOM):
+                    self._assert_launcher(launcher, self._get_random_string())
+
+            # Test if there was no *supported* launcher on the system
+            launcher = self._get_random_string()
+            mock_distutils.spawn.find_executable.side_effect = (
+                lambda command: launcher if launcher == command else None)
+
+            for cluster_name in self.CLUSTER_NAMES:
+                if cluster_name in utils.MSUB_CLUSTERS:
+                    continue
+                with self.assertRaises(RuntimeError):
+                    utils.get_launcher(cluster_name)
+
+            for idx in range(self.N_RANDOM):
+                with self.assertRaises(RuntimeError):
+                    utils.get_launcher(self._get_random_string())
+
+            # Test if command_is_available only returns None
+            mock_distutils.spawn.find_executable.return_value = None
+
+            for cluster_name in self.CLUSTER_NAMES:
+                if cluster_name in utils.MSUB_CLUSTERS:
+                    continue
+                with self.assertRaises(RuntimeError):
+                    utils.get_launcher(cluster_name)
+
+            for idx in range(self.N_RANDOM):
+                with self.assertRaises(RuntimeError):
+                    utils.get_launcher(self._get_random_string())

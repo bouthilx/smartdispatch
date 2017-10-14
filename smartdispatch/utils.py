@@ -1,9 +1,9 @@
+import distutils
 import hashlib
 import json
 import re
 import unicodedata
 
-from distutils.util import strtobool
 from subprocess import Popen, PIPE
 
 
@@ -70,10 +70,10 @@ def yes_no_prompt(query, default=None):
     while True:
         try:
             answer = raw_input("{0}{1}".format(query, available_prompts[default]))
-            return strtobool(answer)
+            return distutils.strtobool(answer)
         except ValueError:
             if answer == '' and default is not None:
-                return strtobool(default)
+                return distutils.strtobool(default)
 
 
 def chunks(sequence, n):
@@ -136,10 +136,10 @@ def detect_cluster():
     try:
         output = Popen(["qstat", "-B"], stdout=PIPE).communicate()[0]
     except OSError:
-        # If qstat is not available we assume that the cluster is unknown.
-        # TODO: handle MILA + CEDAR + GRAHAM
+        # If qstat is not available we assume that the cluster uses slurm. 
+        # (Otherwise return None)
         cluster_name = get_slurm_cluster_name()
-        return None
+        return cluster_name
     # Get server name from status
     server_name = output.split('\n')[2].split(' ')[0]
     # Cleanup the name and return it
@@ -163,8 +163,22 @@ def get_slurm_cluster_name():
     cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
     return cluster_name
 
+
+MSUB_CLUSTERS = ["helios"]
+SUPPORTED_LAUNCHERS = ["qsub", "msub", "sbatch"]
+
+
+def command_is_available(command):
+    return distutils.spawn.find_executable(command) is not None
+
+
 def get_launcher(cluster_name):
-    if cluster_name == "helios":
+    # Gives priority to msub if qsub is also present
+    if cluster_name in MSUB_CLUSTERS:
         return "msub"
-    else:
-        return "qsub"
+
+    for launcher in SUPPORTED_LAUNCHERS:
+        if command_is_available(launcher):
+            return launcher
+
+    raise RuntimeError("No compatible launcher found on the system")
