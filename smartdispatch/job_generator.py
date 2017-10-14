@@ -206,6 +206,15 @@ class SlurmJobGenerator(JobGenerator):
             pbs.options[option] = re.sub('"\$PBS_JOBID"', '%A',
                                          pbs.options[option])
 
+        # Convert to Slurm's --export
+        #
+        # Warning: Slurm does **not** export variables defined locally such as
+        #          variables defined along the command line. For ex:
+        #          PBS_FILENAME=something sbatch --export=ALL somefile.sh
+        #          would *not* export PBS_FILENAME to the script.
+        if pbs.options.pop('-V', None) is not None:
+            pbs.add_sbatch_options(export='ALL')
+
     def _adapt_commands(self, pbs):
         pass
 

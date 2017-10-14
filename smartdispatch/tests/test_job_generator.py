@@ -318,6 +318,11 @@ class TestSlurmQueue(unittest.TestCase):
         assert_true("PBS -q" in str(self.dummy_pbs[0]))
         assert_true("PBS -q" not in str(self.pbs[0]))
 
+    def test_export(self):
+        assert_true("#PBS -V" in str(self.dummy_pbs[0]))
+        assert_true("#PBS -V" not in str(self.pbs[0]))
+        assert_true("#SBATCH --export=ALL" in str(self.pbs[0]))
+
     def test_outputs(self):
         for std in ['-e', '-o']:
             value = self.dummy_pbs[0].options[std]
