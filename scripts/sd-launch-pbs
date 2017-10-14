@@ -23,7 +23,7 @@ def main():
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-L', '--launcher', choices=['qsub', 'msub'], required=False, help='Which launcher to use. Default: qsub')
+    parser.add_argument('-L', '--launcher', choices=['qsub', 'msub', 'sbatch'], required=False, help='Which launcher to use. Default: qsub')
     parser.add_argument('pbs', type=str, help='PBS filename to launch.')
     parser.add_argument('path_job', type=str, help='Path to the job folder.')
 

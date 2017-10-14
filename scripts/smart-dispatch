@@ -194,7 +194,7 @@ def parse_arguments():
     parser.add_argument('-q', '--queueName', required=True, help='Queue used (ex: qwork@mp2, qfat256@mp2, gpu_1)')
     parser.add_argument('-n', '--batchName', required=False, help='The name of the batch. Default: The commands launched.')
     parser.add_argument('-t', '--walltime', required=False, help='Set the estimated running time of your jobs using the DD:HH:MM:SS format. Note that they will be killed when this time limit is reached.')
-    parser.add_argument('-L', '--launcher', choices=['qsub', 'msub'], required=False, help='Which launcher to use. Default: qsub')
+    parser.add_argument('-L', '--launcher', choices=['qsub', 'msub', 'sbatch'], required=False, help='Which launcher to use. Default: qsub')
     parser.add_argument('-C', '--coresPerNode', type=int, required=False, help='How many cores there are per node.')
     parser.add_argument('-G', '--gpusPerNode', type=int, required=False, help='How many gpus there are per node.')
     # parser.add_argument('-M', '--memPerNode', type=int, required=False, help='How much memory there are per node (in Gb).')
