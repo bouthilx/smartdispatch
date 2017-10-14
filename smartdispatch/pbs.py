@@ -162,7 +162,9 @@ class PBS(object):
             specified where to save this PBS file
         """
         with open(filename, 'w') as pbs_file:
+            self.prolog.insert(0, "PBS_FILENAME=%s" % filename)
             pbs_file.write(str(self))
+            self.prolog.pop(0)
 
     def __str__(self):
         pbs = []

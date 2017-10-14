@@ -291,11 +291,15 @@ class TestSlurmQueue(unittest.TestCase):
         self.commands = ["echo %d; echo $PBS_JOBID; echo $PBS_WALLTIME" % i
                          for i in range(self.nb_of_commands)]
 
-        job_generator = SlurmJobGenerator(self.queue, self.commands)
+        self.prolog = ["echo prolog"]
+        self.epilog = ["echo $PBS_FILENAME"]
+        job_generator = SlurmJobGenerator(
+            self.queue, self.commands, prolog=self.prolog, epilog=self.epilog)
         self.pbs = job_generator.pbs_list
 
         with patch.object(SlurmJobGenerator,'_add_cluster_specific_rules', side_effect=lambda: None):
-            dummy_generator = SlurmJobGenerator(self.queue, self.commands)
+            dummy_generator = SlurmJobGenerator(
+                self.queue, self.commands, prolog=self.prolog, epilog=self.epilog)
             self.dummy_pbs = dummy_generator.pbs_list
 
     def test_ppn_ncpus(self):

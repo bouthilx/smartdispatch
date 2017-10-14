@@ -144,4 +144,5 @@ module load python2.7
     def test_save(self):
         pbs_filename = os.path.join(self.testing_dir, "pbs.sh")
         self.pbs.save(pbs_filename)
+        self.pbs.prolog.insert(0, "PBS_FILENAME=%s" % pbs_filename)
         assert_equal(str(self.pbs), open(pbs_filename).read())
