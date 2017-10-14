@@ -345,6 +345,18 @@ class TestSlurmQueue(unittest.TestCase):
         self.assertNotIn("$PBS_JOBID", str(self.pbs[0]))
         self.assertIn("$SLURM_JOB_ID", str(self.pbs[0]))
 
+    def test_walltime_env_var(self):
+        self.assertIn("$PBS_WALLTIME", str(self.dummy_pbs[0]))
+        self.assertNotIn("$SBATCH_TIMELIMIT", str(self.dummy_pbs[0]))
+
+        self.assertNotIn("$PBS_WALLTIME", str(self.pbs[0]))
+        self.assertIn("$SBATCH_TIMELIMIT", str(self.pbs[0]))
+
+        self.assertNotIn("SBATCH_TIMELIMIT=",
+                    "\n".join(self.dummy_pbs[0].prolog))
+        self.assertIn("SBATCH_TIMELIMIT=",
+                    "\n".join(self.pbs[0].prolog))
+
 
 class TestJobGeneratorFactory(object):
 

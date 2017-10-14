@@ -238,6 +238,16 @@ class SlurmJobGenerator(JobGenerator):
         for command_id, command in enumerate(pbs.commands):
             pbs.commands[command_id] = command = re.sub(
                 "\$PBS_JOBID", "$SLURM_JOB_ID", command)
+            # NOTE: SBATCH_TIMELIMIT is **not** an official slurm environment
+            # variable, it needs to be set in the script.
+            pbs.commands[command_id] = command = re.sub(
+                "\$PBS_WALLTIME", "$SBATCH_TIMELIMIT", command)
+
+            # Set SBATCH_TIMELIMIT in the prolog, hence, before any code from
+            # commands and epilog.
+            pbs.add_to_prolog(
+                "SBATCH_TIMELIMIT=%s" %
+                utils.walltime_to_seconds(pbs.resources["walltime"]))
 
     def _add_cluster_specific_rules(self):
         for pbs in self.pbs_list:
