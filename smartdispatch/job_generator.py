@@ -15,6 +15,8 @@ def job_generator_factory(queue, commands, prolog=[], epilog=[], command_params=
         return HeliosJobGenerator(queue, commands, prolog, epilog, command_params, base_path)
     elif cluster_name == "hades":
         return HadesJobGenerator(queue, commands, prolog, epilog, command_params, base_path)
+    elif utils.get_launcher(cluster_name) == "sbatch":
+        return SlurmJobGenerator(queue, commands, prolog, epilog, command_params, base_path)
 
     return JobGenerator(queue, commands, prolog, epilog, command_params, base_path)
 
