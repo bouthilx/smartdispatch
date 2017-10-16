@@ -1,0 +1,85 @@
+{
+    "cpu": {
+        "ram": 126,
+        "cores": 32,
+        "max_walltime": "648:00:00:00",
+        "gpus": 0,
+        "nodes": 576
+    },
+    "large_mem": {
+        "ram": 252,
+        "cores": 32,
+        "max_walltime": "648:00:00:00",
+        "gpus": 0,
+        "nodes": 128 
+    },
+    "large_mem_500": {
+        "ram": 504,
+        "cores": 32,
+        "max_walltime": "648:00:00:00",
+        "gpus": 0,
+        "nodes": 24
+    },
+    "large_mem_1500": {
+        "ram": 1512,
+        "cores": 32,
+        "max_walltime": "?",
+        "gpus": 0,
+        "nodes": 24
+    },
+    "large_mem_3000": {
+        "ram": 3024,
+        "cores": 32,
+        "max_walltime": "?",
+        "gpus": 0,
+        "nodes": 4
+    },
+    "gpu_1": {
+        "ram": 32,
+        "modules": ["cuda/8.0.44"],
+        "cores": 6,
+        "max_walltime": "648:00:00:00",
+	"gpus": 1,
+        "nodes": 456 
+    },
+    "gpu_1_large_mem": {
+        "ram": 63,
+        "modules": ["cuda/8.0.44"],
+        "cores": 6,
+        "max_walltime": "648:00:00:00",
+	"gpus": 1,
+        "nodes": 128
+    },
+    "gpu_2": {
+        "ram": 63,
+        "modules": ["cuda/8.0.44"],
+        "cores": 12,
+        "max_walltime": "648:00:00:00",
+	"gpus": 2,
+        "nodes": 228
+    },
+    "gpu_2_large_mem": {
+        "ram": 126,
+        "modules": ["cuda/8.0.44"],
+        "cores": 12,
+        "max_walltime": "648:00:00:00",
+	"gpus": 2,
+        "nodes": 64
+    },
+    "gpu_4": {
+        "ram": 126,
+        "modules": ["cuda/8.0.44"],
+        "cores": 24,
+        "max_walltime": "648:00:00:00",
+	"gpus": 4,
+        "nodes": 114
+    },
+    "gpu_4_large_mem": {
+        "ram": 252,
+        "modules": ["cuda/8.0.44"],
+        "cores": 24,
+        "max_walltime": "648:00:00:00",
+	"gpus": 4,
+        "nodes": 32
+    }
+}
