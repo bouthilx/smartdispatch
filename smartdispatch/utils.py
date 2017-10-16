@@ -2,10 +2,14 @@ import distutils
 import distutils.spawn
 import hashlib
 import json
+import logging
 import re
 import unicodedata
 
 from subprocess import Popen, PIPE
+
+
+logger = logging.getLogger(__name__)
 
 
 TIME_REGEX = re.compile(
@@ -157,11 +161,18 @@ def detect_cluster():
 
 def get_slurm_cluster_name():
     try:
-        stdout = Popen("sacctmgr list cluster", stdout=PIPE, shell=True).communicate()[0]
+        popen = Popen("sacctmgr list cluster", stdout=PIPE, shell=True)
+        stdout, stderr = popen.communicate()
     except OSError:
         return None
-    stdout = stdout.decode()
-    cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
+
+    try:
+        stdout = stdout.decode()
+        cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
+    except IndexError:
+        logger.debug(stderr)
+        return None
+
     return cluster_name
 
 
