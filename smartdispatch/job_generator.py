@@ -243,15 +243,17 @@ class SlurmJobGenerator(JobGenerator):
             pbs.commands[command_id] = command = re.sub(
                 "\$PBS_WALLTIME", "$SBATCH_TIMELIMIT", command)
 
-            # Set SBATCH_TIMELIMIT in the prolog, hence, before any code from
-            # commands and epilog.
-            pbs.add_to_prolog(
-                "SBATCH_TIMELIMIT=%s" %
-                utils.walltime_to_seconds(pbs.resources["walltime"]))
+    def _adapt_prolog(self, pbs):
+        # Set SBATCH_TIMELIMIT in the prolog, hence, before any code from
+        # commands and epilog.
+        pbs.add_to_prolog(
+            "SBATCH_TIMELIMIT=%s" %
+            utils.walltime_to_seconds(pbs.resources["walltime"]))
 
     def _add_cluster_specific_rules(self):
         for pbs in self.pbs_list:
             self._adapt_options(pbs)
             self._adapt_resources(pbs)
-            self._adapt_commands(pbs)
             self._adapt_variable_names(pbs)
+            self._adapt_prolog(pbs)
+            self._adapt_commands(pbs)
