@@ -1,4 +1,5 @@
 import distutils
+import distutils.spawn
 import hashlib
 import json
 import re
