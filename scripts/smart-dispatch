@@ -1,9 +1,10 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
+import argparse
+import logging
 import os
 import sys
-import argparse
 import time as t
 from os.path import join as pjoin
 from textwrap import dedent
@@ -16,14 +17,16 @@ from smartdispatch import get_available_queues
 from smartdispatch import launch_jobs
 from smartdispatch import utils
 
-import logging
 import smartdispatch
+
+
+logger = logging.getLogger()
+
 
 LOGS_FOLDERNAME = "SMART_DISPATCH_LOGS"
 CLUSTER_NAME = utils.detect_cluster()
 AVAILABLE_QUEUES = get_available_queues(CLUSTER_NAME)
 LAUNCHER = utils.get_launcher(CLUSTER_NAME)
-print "LAUNCHER", LAUNCHER
 
 # Autoresume settings.
 TIMEOUT_EXIT_CODE = 124
@@ -62,7 +65,13 @@ if [ $VERBOSE = true ]; then
 fi
 if [ "$NEED_TO_RESUME" = true ]; then
     echo "Autoresuming using: {{launcher}} $PBS_FILENAME"
-    sd-launch-pbs --launcher {{launcher}} $PBS_FILENAME {{path_job}}
+    if [ $VERBOSE = true]; then
+        VERBOSE_OPTION="-vv"
+    else
+        VERBOSE_OPTION=""
+    fi
+
+    sd-launch-pbs $VERBOSE_OPTION --launcher {{launcher}} $PBS_FILENAME {{path_job}}
 fi
 """.format(timeout_exit_code=TIMEOUT_EXIT_CODE)
 
