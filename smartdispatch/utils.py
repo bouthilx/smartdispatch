@@ -3,6 +3,7 @@ import distutils.spawn
 import hashlib
 import json
 import logging
+import os
 import re
 import unicodedata
 
@@ -157,7 +158,23 @@ def detect_cluster():
         cluster_name = "helios"
     elif server_name.split('.')[-1] == 'hades':
         cluster_name = "hades"
+    else:
+        cluster_name = look_up_cluster_name_env_var()
+
     return cluster_name
+
+
+CLUSTER_ENV_NAMES = ["CLUSTER", "CC_CLUSTER"]
+
+
+def look_up_cluster_name_env_var():
+    for env_var in CLUSTER_ENV_NAMES:
+        cluster_name = os.environ.get(env_var, "")
+        if cluster_name.strip() != "":
+            return cluster_name
+
+    return None
+
 
 def get_slurm_cluster_name():
     try:
@@ -171,7 +188,7 @@ def get_slurm_cluster_name():
         cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
     except IndexError:
         logger.debug(stderr)
-        return None
+        return look_up_cluster_name_env_var()
 
     return cluster_name
 

@@ -169,6 +169,18 @@ class SlurmClusterIdentificationTest(ClusterIdentificationTest):
         super(SlurmClusterIdentificationTest, self).__init__(*args, **kwargs)
         self.detect_cluster = utils.get_slurm_cluster_name
 
+    def test_bad_slurmdb_access(self):
+        with patch('smartdispatch.utils.Popen') as MockPopen:
+            mock_process = MockPopen.return_value
+            for name, cluster in zip(self.server_names, self.clusters):
+                mock_process.communicate.return_value = (
+                   "", "error")
+                self.assertEquals(self.detect_cluster(), None)
+
+                with patch('smartdispatch.utils.os') as mock_os:
+                    mock_os.environ = dict(CLUSTER=name)
+                    self.assertEquals(self.detect_cluster(), cluster)
+
 
 class TestGetLauncher(unittest.TestCase):
     longMessage = True
