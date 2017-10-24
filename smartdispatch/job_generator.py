@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import math
 import os
 import re
 from smartdispatch.pbs import PBS
@@ -97,7 +98,7 @@ class JobGenerator(object):
         nb_commands_per_node = self.queue.nb_cores_per_node // self.nb_cores_per_command
 
         if self.queue.nb_gpus_per_node > 0 and self.nb_gpus_per_command > 0:
-            nb_commands_per_node = min(nb_commands_per_node, self.queue.nb_gpus_per_node // self.nb_gpus_per_command)
+            nb_commands_per_node = min(nb_commands_per_node, int(math.ceil(self.queue.nb_gpus_per_node / self.nb_gpus_per_command)))
 
         pbs_files = []
         # Distribute equally the jobs among the PBS files and generate those files
@@ -110,7 +111,7 @@ class JobGenerator(object):
             # Set resource: nodes
             resource = "1:ppn={ppn}".format(ppn=len(commands) * self.nb_cores_per_command)
             if self.queue.nb_gpus_per_node > 0:
-                resource += ":gpus={gpus}".format(gpus=len(commands) * self.nb_gpus_per_command)
+                resource += ":gpus={gpus}".format(gpus=int(math.ceil(len(commands) * self.nb_gpus_per_command)))
 
             pbs.add_resources(nodes=resource)
 
