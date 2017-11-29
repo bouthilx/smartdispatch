@@ -8,6 +8,8 @@ import re
 import unicodedata
 
 from subprocess import Popen, PIPE
+from subprocess32 import check_output
+import subprocess32
 
 
 logger = logging.getLogger(__name__)
@@ -140,8 +142,10 @@ def load_dict_from_json_file(path):
 def detect_cluster():
     # Get server status
     try:
-        output = Popen(["qstat", "-B"], stdout=PIPE).communicate()[0]
-    except OSError:
+        # output = Popen(["qstat", "-B"], stdout=PIPE, stderr=PIPE, timeout=5).communicate()[0]
+        output = check_output(["qstat", "-B"], stderr=PIPE, timeout=5)
+    except (subprocess32.CalledProcessError, OSError) as e:
+        logger.debug(str(e))
         # If qstat is not available we assume that the cluster uses slurm. 
         # (Otherwise return None)
         cluster_name = get_slurm_cluster_name()
@@ -178,16 +182,18 @@ def look_up_cluster_name_env_var():
 
 def get_slurm_cluster_name():
     try:
-        popen = Popen("sacctmgr list cluster", stdout=PIPE, shell=True)
-        stdout, stderr = popen.communicate()
-    except OSError:
-        return None
+        # popen = Popen("sacctmgr list cluster", stdout=PIPE, stderr=PIPE, shell=True, timeout=5)
+        output = check_output(["sacctmgr", "list", "cluster"], stderr=PIPE, timeout=5)
+        # stdout, stderr = popen.communicate()
+    except (subprocess32.CalledProcessError, OSError) as e:
+        logger.debug(str(e))
+        return look_up_cluster_name_env_var()
 
     try:
-        stdout = stdout.decode()
-        cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
+        # stdout = stdout.decode()
+        cluster_name = output.splitlines()[2].strip().split(' ')[0]
     except IndexError:
-        logger.debug(stderr)
+        logger.debug(output)
         return look_up_cluster_name_env_var()
 
     return cluster_name
