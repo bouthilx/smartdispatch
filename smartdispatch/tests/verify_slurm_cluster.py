@@ -66,7 +66,7 @@ mv paused$1.log completed$1.log
 
 def set_defaults(dictionary, **kwargs):
 
-    for item, value in kwargs.iteritems():
+    for item, value in kwargs.items():
         dictionary.setdefault(item, value)
 
 
@@ -162,14 +162,14 @@ def try_to_remove_file(filename_template, expected_number):
             i += 1
             os.remove(file_name)
     except OSError as e:
-        print str(e)
+        print(str(e))
 
     if i != expected_number:
-        print "Error: Expected %d files, found %d" % (expected_number, i)
+        print("Error: Expected %d files, found %d" % (expected_number, i))
     else:
-        print "OK: All %d files %s were found:\n%s" % (
+        print("OK: All %d files %s were found:\n%s" % (
             expected_number, filename_template,
-            "\n".join(sorted(file_names)))
+            "\n".join(sorted(file_names))))
 
 
 def minimum_requirement(attribute_name, minimum_value):
@@ -194,10 +194,10 @@ def minimum_requirement(attribute_name, minimum_value):
             if getattr(self, attribute_name) >= minimum_value:
                 return method(self, *args, **kwargs)
             else:
-                print ("%s does not have enough %s: %d."
+                print(("%s does not have enough %s: %d."
                        "Skipping %s." %
                        (self.__class__.__name__, attribute_name, minimum_value,
-                        verification_name))
+                        verification_name)))
                 return None
 
         return call
@@ -237,10 +237,10 @@ class VerifySlurmCluster(object):
         verification_methods = self.get_verification_methods(filtered_by)
         processes = []
         for verification_name, verification_fct in \
-                    verification_methods.iteritems():
-            print "========%s" % ("=" * len(verification_name))
-            print "Running %s" % verification_name
-            print "========%s\n\n" % ("=" * len(verification_name))
+                    verification_methods.items():
+            print("========%s" % ("=" * len(verification_name)))
+            print("Running %s" % verification_name)
+            print("========%s\n\n" % ("=" * len(verification_name)))
 
             if self.debug or self.no_fork:
                 verification_fct()
@@ -271,8 +271,8 @@ class VerifySlurmCluster(object):
                 popen.stdin.write(
                     "python %s --no-fork %s;" % (
                         script_path, verification_name))
-                print "python %s --no-fork %s;" % (
-                    script_path, verification_name)
+                print("python %s --no-fork %s;" % (
+                    script_path, verification_name))
 
                 processes.append(popen)
 
@@ -288,26 +288,26 @@ class VerifySlurmCluster(object):
 
         command = ("smart-dispatch %s launch bash %s %s" %
                    (argv, FILE_NAME, command_arguments))
-        print "running test with command: "
-        print command
+        print("running test with command: ")
+        print(command)
 
         process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
 
-        print "\nstdout:"
-        print stdout.decode()
+        print("\nstdout:")
+        print(stdout.decode())
 
-        print "\nstderr:"
-        print stderr.decode()
+        print("\nstderr:")
+        print(stderr.decode())
         return stdout.split("\n")[-2].strip()
 
     def validate(self, root_dir, argv, squeue_wait, nb_of_commands=1,
                  resume=False):
 
-        print "\nValidating arguments:"
-        print argv
+        print("\nValidating arguments:")
+        print(argv)
 
         stdout = get_squeue()
         number_of_process = stdout.count("\n") - 1
@@ -316,16 +316,16 @@ class VerifySlurmCluster(object):
             root = os.path.join(root_dir, "commands")
             for file_path in os.listdir(root):
                 if file_path.endswith(".sh"):
-                    print file_path
-                    print open(os.path.join(root, file_path), 'r').read()
+                    print(file_path)
+                    print(open(os.path.join(root, file_path), 'r').read())
 
-            print stdout
-            print "Waiting %d seconds" % squeue_wait
+            print(stdout)
+            print("Waiting %d seconds" % squeue_wait)
             time.sleep(squeue_wait)
             stdout = get_squeue()
             number_of_process = stdout.count("\n") - 1
-            print stdout
-            print number_of_process
+            print(stdout)
+            print(number_of_process)
 
         try_to_remove_file("running*.log", expected_number=nb_of_commands)
         try_to_remove_file("resumed*.log",
@@ -335,8 +335,8 @@ class VerifySlurmCluster(object):
         root = os.path.join(root_dir, "logs")
         for file_path in reversed(sorted(os.listdir(root))):
             if file_path.endswith(".err") or file_path.endswith(".out"):
-                print file_path
-                print open(os.path.join(root, file_path), 'r').read()
+                print(file_path)
+                print(open(os.path.join(root, file_path), 'r').read())
                 if self.debug:
                     pdb.set_trace()
 
@@ -383,7 +383,7 @@ class VerifySlurmCluster(object):
     @minimum_requirement("GPUS_PER_NODE", 2)
     def verify_simple_task_with_many_gpus(self, **kwargs):
 
-        for gpus_per_command in xrange(2, self.GPUS_PER_NODE + 1):
+        for gpus_per_command in range(2, self.GPUS_PER_NODE + 1):
             arguments = kwargs.copy()
             arguments["gpusPerCommand"] = gpus_per_command
 
@@ -406,7 +406,7 @@ class VerifySlurmCluster(object):
 
     @minimum_requirement("CORES_PER_NODE", 4)
     def verify_many_task_with_many_cores(self, **kwargs):
-        for cores_per_command in xrange(2, self.CORES_PER_NODE):
+        for cores_per_command in range(2, self.CORES_PER_NODE):
             if cores_per_command // self.CORES_PER_NODE <= 1:
                 break
 
@@ -429,7 +429,7 @@ class VerifySlurmCluster(object):
 
     @minimum_requirement("GPUS_PER_NODE", 4)
     def verify_many_task_with_many_gpus(self, **kwargs):
-        for gpus_per_command in xrange(2, self.GPUS_PER_NODE + 1):
+        for gpus_per_command in range(2, self.GPUS_PER_NODE + 1):
             if gpus_per_command // self.GPUS_PER_NODE <= 1:
                 break
 

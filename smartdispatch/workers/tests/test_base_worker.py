@@ -25,7 +25,7 @@ class TestSmartWorker(unittest.TestCase):
         self.command_manager = CommandManager(os.path.join(self._commands_dir, "commands.txt"))
         self.command_manager.set_commands_to_run(self.commands)
 
-        self.commands_uid = map(utils.generate_uid_from_string, self.commands)
+        self.commands_uid = list(map(utils.generate_uid_from_string, self.commands))
 
     def tearDown(self):
         shutil.rmtree(self._commands_dir)

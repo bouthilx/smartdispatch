@@ -1,3 +1,5 @@
+from builtins import str
+
 import distutils
 import distutils.spawn
 import hashlib
@@ -6,9 +8,12 @@ import logging
 import os
 import re
 import unicodedata
+import sys
 
-import subprocess
-from subprocess import Popen, PIPE, check_output
+if os.name == 'posix' and sys.version_info[0] < 3:
+    import subprocess32 as subprocess
+else:
+    import subprocess
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +35,7 @@ def walltime_to_seconds(walltime):
     while len(split) < 4:
         split = [0] + split
 
-    days, hours, minutes, seconds = map(int, split)
+    days, hours, minutes, seconds = list(map(int, split))
 
     return (((((days * 24) + hours) * 60) + minutes) * 60) + seconds
 
@@ -59,13 +64,13 @@ def jobname_generator(jobname, job_id):
 
 def print_boxed(string):
     splitted_string = string.split('\n')
-    max_len = max(map(len, splitted_string))
-    box_line = u"\u2500" * (max_len + 2)
+    max_len = max(list(map(len, splitted_string)))
+    box_line = "\u2500" * (max_len + 2)
 
-    out = u"\u250c" + box_line + u"\u2510\n"
-    out += '\n'.join([u"\u2502 {} \u2502".format(line.ljust(max_len)) for line in splitted_string])
-    out += u"\n\u2514" + box_line + u"\u2518"
-    print out
+    out = "\u250c" + box_line + "\u2510\n"
+    out += '\n'.join(["\u2502 {} \u2502".format(line.ljust(max_len)) for line in splitted_string])
+    out += "\n\u2514" + box_line + "\u2518"
+    print(out)
 
 
 def yes_no_prompt(query, default=None):
@@ -76,7 +81,7 @@ def yes_no_prompt(query, default=None):
 
     while True:
         try:
-            answer = raw_input("{0}{1}".format(query, available_prompts[default]))
+            answer = input("{0}{1}".format(query, available_prompts[default]))
             return distutils.strtobool(answer)
         except ValueError:
             if answer == '' and default is not None:
@@ -85,13 +90,13 @@ def yes_no_prompt(query, default=None):
 
 def chunks(sequence, n):
     """ Yield successive n-sized chunks from sequence. """
-    for i in xrange(0, len(sequence), n):
+    for i in range(0, len(sequence), n):
         yield sequence[i:i + n]
 
 
 def generate_uid_from_string(value):
     """ Create unique identifier from a string. """
-    return hashlib.sha256(value).hexdigest()
+    return hashlib.sha256(value.encode('ascii', 'ignore')).hexdigest()
 
 
 def slugify(value):
@@ -104,7 +109,7 @@ def slugify(value):
     ---------
     https://github.com/django/django/blob/1.7c3/django/utils/text.py#L436
     """
-    value = unicodedata.normalize('NFKD', unicode(value, "UTF-8")).encode('ascii', 'ignore').decode('ascii')
+    value = unicodedata.normalize('NFKD', str(value)).encode('ascii', 'ignore').decode('ascii')
     value = re.sub('[^\w\s-]', '', value).strip().lower()
     return str(re.sub('[-\s]+', '_', value))
 
@@ -112,7 +117,10 @@ def slugify(value):
 def encode_escaped_characters(text, escaping_character="\\"):
     """ Escape the escaped character using its hex representation """
     def hexify(match):
-        return "\\x{0}".format(match.group()[-1].encode("hex"))
+        if hasattr(bytes, 'hex'):  # python3
+            return "\\x{0}".format(match.group()[-1].encode('utf-8').hex())
+        else:  # python2
+            return "\\x{0}".format(match.group()[-1].encode("hex"))
 
     return re.sub(r"\\.", hexify, text)
 
@@ -123,7 +131,10 @@ def decode_escaped_characters(text):
         return ''
 
     def unhexify(match):
-        return match.group()[2:].decode("hex")
+        if hasattr(bytes, 'fromhex'):  # python3
+            return bytes.fromhex(match.group()[2:]).decode('utf-8')
+        else:  # python2
+            return match.group()[2:].decode("hex")
 
     return re.sub(r"\\x..", unhexify, text)
 
@@ -141,7 +152,7 @@ def load_dict_from_json_file(path):
 def detect_cluster():
     # Get server status
     try:
-        output = check_output(["qstat", "-B"], stderr=PIPE, timeout=5)
+        output = subprocess.check_output(["qstat", "-B"], stderr=subprocess.PIPE, timeout=5)
     except (subprocess.CalledProcessError, OSError) as e:
         logger.debug(str(e))
         # If qstat is not available we assume that the cluster uses slurm. 
@@ -180,16 +191,17 @@ def look_up_cluster_name_env_var():
 
 def get_slurm_cluster_name():
     try:
-        output = check_output(["sacctmgr", "list", "cluster"], stderr=PIPE, timeout=5)
+        output = subprocess.check_output(["sacctmgr", "list", "cluster"],
+                                         stderr=subprocess.PIPE, timeout=5)
     except (subprocess.CalledProcessError, OSError) as e:
         logger.debug(str(e))
         return look_up_cluster_name_env_var()
 
     try:
-        stdout = stdout.decode()
+        stdout = output
         cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
     except IndexError:
-        logger.debug(stderr)
+        logger.debug("Cannot parse: " + stdout)
         return look_up_cluster_name_env_var()
 
     return cluster_name

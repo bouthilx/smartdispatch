@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from builtins import str
 import random
 import string
 import subprocess
@@ -99,7 +100,7 @@ class PrintBoxedTests(unittest.TestCase):
 
 
 def test_chunks():
-    sequence = range(10)
+    sequence = list(range(10))
 
     for n in range(1, 11):
         expected = []
@@ -122,7 +123,7 @@ def test_slugify():
     testing_arguments = [("command", "command"),
                          ("/path/to/arg2/", "pathtoarg2"),
                          ("!\"/$%?&*()[]~{<>'.#|\\", ""),
-                         ("éèàëöüùò±@£¢¤¬¦²³¼½¾", "eeaeouuo23141234"),  # ¼ => 1/4 => 14
+                         (u"éèàëöüùò±@£¢¤¬¦²³¼½¾", "eeaeouuo23141234"),  # ¼ => 1/4 => 14
                          ("arg with space", "arg_with_space")]
 
     for arg, expected in testing_arguments:
@@ -153,12 +154,11 @@ class ClusterIdentificationTest(unittest.TestCase):
 
     def test_detect_cluster(self):
 
-        with patch('smartdispatch.utils.Popen') as MockPopen:
-            mock_process = MockPopen.return_value
+        with patch('smartdispatch.utils.subprocess.check_output') as MockCheckOutput:
             for name, cluster in zip(self.server_names, self.clusters):
-                mock_process.communicate.return_value = (
-                   self.command_output.format(name), "")
-                self.assertEquals(self.detect_cluster(), cluster)
+                MockCheckOutput.return_value = (
+                   self.command_output.format(name))
+                self.assertEqual(self.detect_cluster(), cluster)
 
 
 class SlurmClusterIdentificationTest(ClusterIdentificationTest):
@@ -170,16 +170,15 @@ class SlurmClusterIdentificationTest(ClusterIdentificationTest):
         self.detect_cluster = utils.get_slurm_cluster_name
 
     def test_bad_slurmdb_access(self):
-        with patch('smartdispatch.utils.Popen') as MockPopen:
-            mock_process = MockPopen.return_value
+        with patch('smartdispatch.utils.subprocess.check_output') as MockCheckOutput:
             for name, cluster in zip(self.server_names, self.clusters):
-                mock_process.communicate.return_value = (
-                   "", "error")
-                self.assertEquals(self.detect_cluster(), None)
+                MockCheckOutput.return_value = ""
+
+                self.assertEqual(self.detect_cluster(), None)
 
                 with patch('smartdispatch.utils.os') as mock_os:
                     mock_os.environ = dict(CLUSTER=name)
-                    self.assertEquals(self.detect_cluster(), cluster)
+                    self.assertEqual(self.detect_cluster(), cluster)
 
 
 class TestGetLauncher(unittest.TestCase):
@@ -191,8 +190,8 @@ class TestGetLauncher(unittest.TestCase):
     CLUSTER_NAMES = ["hades", "mammouth", "guillimin", "helios"]
 
     def _get_random_string(self):
-        return ''.join([random.choice(string.lowercase)
-                        for i in xrange(random.randint(*self.RANDOM_SIZE))])
+        return ''.join([random.choice(string.ascii_lowercase)
+                        for i in range(random.randint(*self.RANDOM_SIZE))])
 
     def _assert_launcher(self, desired, cluster_name):
         if cluster_name in utils.MSUB_CLUSTERS:

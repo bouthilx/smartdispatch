@@ -14,6 +14,6 @@ setup(
     license='LICENSE.txt',
     description='An easy to use job launcher for supercomputers with PBS compatible job manager.',
     long_description=open('README.md').read(),
-    install_requires=['psutil>=1'],
+    install_requires=['psutil>=1', 'future'],
     package_data={'smartdispatch': ['config/*.json']}
 )

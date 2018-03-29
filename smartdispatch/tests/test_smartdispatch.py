@@ -3,7 +3,7 @@ import re
 import shutil
 import time as t
 from os.path import join as pjoin
-from StringIO import StringIO
+from io import StringIO
 
 import tempfile
 from nose.tools import assert_true, assert_equal
@@ -43,11 +43,11 @@ def test_get_commands_from_file():
     commands = ["command1 arg1 arg2",
                 "command2",
                 "command3 arg1 arg2 arg3 arg4"]
-    fileobj = StringIO("\n".join(commands))
+    fileobj = StringIO(u"\n".join(commands))
     assert_array_equal(smartdispatch.get_commands_from_file(fileobj), commands)
 
     # Test stripping last line if empty
-    fileobj = StringIO("\n".join(commands) + "\n")
+    fileobj = StringIO(u"\n".join(commands) + u"\n")
     assert_array_equal(smartdispatch.get_commands_from_file(fileobj), commands)
 
 
@@ -247,9 +247,9 @@ def test_get_commands_from_sparse_file():
                          "command2",
                          "command3 arg1 arg2 arg3 arg4"]
 
-    fileobj = StringIO("\n".join(commands_1))
+    fileobj = StringIO(u"\n".join(commands_1))
     assert_array_equal(smartdispatch.get_commands_from_file(fileobj), expected_commands)
 
     # Test if there is some white in the empty line
-    fileobj = StringIO("\n".join(commands_2))
+    fileobj = StringIO(u"\n".join(commands_2))
     assert_array_equal(smartdispatch.get_commands_from_file(fileobj), expected_commands)
