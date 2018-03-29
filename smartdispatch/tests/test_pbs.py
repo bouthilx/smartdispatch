@@ -28,7 +28,7 @@ class TestPBS(unittest.TestCase):
     def test_add_options(self):
         # Default options
         assert_equal(len(self.pbs.options), 2)
-        assert_true('-V' in self.pbs.options.keys())
+        assert_true('-V' in list(self.pbs.options.keys()))
         assert_equal(self.pbs.options['-q'], self.queue_name)
 
         self.pbs.add_options(A="option1")

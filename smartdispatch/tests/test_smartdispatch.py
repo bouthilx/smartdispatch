@@ -3,7 +3,7 @@ import re
 import shutil
 import time as t
 from os.path import join as pjoin
-from StringIO import StringIO
+from io import StringIO
 
 import tempfile
 from nose.tools import assert_true, assert_equal

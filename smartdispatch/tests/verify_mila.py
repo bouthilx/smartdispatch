@@ -32,7 +32,7 @@ class VerifyMILACluster(VerifySlurmCluster):
 
 
 if __name__ == "__main__":
-    verifications = filter(lambda o: not o.startswith("--"), sys.argv[1:])
+    verifications = [o for o in sys.argv[1:] if not o.startswith("--")]
     VerifyMILACluster(debug="--debug" in sys.argv[1:],
                       no_fork="--no-fork" in sys.argv[1:]).run_verifications(
         filtered_by=verifications)

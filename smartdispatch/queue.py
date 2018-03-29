@@ -1,4 +1,4 @@
-from smartdispatch import get_available_queues
+from .smartdispatch import get_available_queues
 
 
 class Queue(object):

@@ -99,7 +99,7 @@ class PrintBoxedTests(unittest.TestCase):
 
 
 def test_chunks():
-    sequence = range(10)
+    sequence = list(range(10))
 
     for n in range(1, 11):
         expected = []
@@ -158,7 +158,7 @@ class ClusterIdentificationTest(unittest.TestCase):
             for name, cluster in zip(self.server_names, self.clusters):
                 mock_process.communicate.return_value = (
                    self.command_output.format(name), "")
-                self.assertEquals(self.detect_cluster(), cluster)
+                self.assertEqual(self.detect_cluster(), cluster)
 
 
 class SlurmClusterIdentificationTest(ClusterIdentificationTest):
@@ -175,11 +175,11 @@ class SlurmClusterIdentificationTest(ClusterIdentificationTest):
             for name, cluster in zip(self.server_names, self.clusters):
                 mock_process.communicate.return_value = (
                    "", "error")
-                self.assertEquals(self.detect_cluster(), None)
+                self.assertEqual(self.detect_cluster(), None)
 
                 with patch('smartdispatch.utils.os') as mock_os:
                     mock_os.environ = dict(CLUSTER=name)
-                    self.assertEquals(self.detect_cluster(), cluster)
+                    self.assertEqual(self.detect_cluster(), cluster)
 
 
 class TestGetLauncher(unittest.TestCase):
@@ -192,7 +192,7 @@ class TestGetLauncher(unittest.TestCase):
 
     def _get_random_string(self):
         return ''.join([random.choice(string.lowercase)
-                        for i in xrange(random.randint(*self.RANDOM_SIZE))])
+                        for i in range(random.randint(*self.RANDOM_SIZE))])
 
     def _assert_launcher(self, desired, cluster_name):
         if cluster_name in utils.MSUB_CLUSTERS:

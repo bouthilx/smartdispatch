@@ -103,7 +103,7 @@ def unfold_command(command):
         pos = match.end()
 
     arguments.append([text[pos:]])  # Add remaining unfolded arguments
-    arguments = [map(utils.decode_escaped_characters, argvalues) for argvalues in arguments]
+    arguments = [list(map(utils.decode_escaped_characters, argvalues)) for argvalues in arguments]
     return ["".join(argvalues) for argvalues in itertools.product(*arguments)]
 
 
@@ -198,4 +198,4 @@ def launch_jobs(launcher, pbs_filenames, cluster_name, path_job):  # pragma: no 
     with open_with_lock(pjoin(path_job, "jobs_id.txt"), 'a') as jobs_id_file:
         jobs_id_file.writelines(t.strftime("## %Y-%m-%d %H:%M:%S ##\n"))
         jobs_id_file.writelines("\n".join(jobs_id) + "\n")
-    print "\nJobs id:\n{jobs_id}".format(jobs_id=" ".join(jobs_id))
+    print("\nJobs id:\n{jobs_id}".format(jobs_id=" ".join(jobs_id)))

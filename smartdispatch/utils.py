@@ -30,7 +30,7 @@ def walltime_to_seconds(walltime):
     while len(split) < 4:
         split = [0] + split
 
-    days, hours, minutes, seconds = map(int, split)
+    days, hours, minutes, seconds = list(map(int, split))
 
     return (((((days * 24) + hours) * 60) + minutes) * 60) + seconds
 
@@ -59,13 +59,13 @@ def jobname_generator(jobname, job_id):
 
 def print_boxed(string):
     splitted_string = string.split('\n')
-    max_len = max(map(len, splitted_string))
-    box_line = u"\u2500" * (max_len + 2)
+    max_len = max(list(map(len, splitted_string)))
+    box_line = "\u2500" * (max_len + 2)
 
-    out = u"\u250c" + box_line + u"\u2510\n"
-    out += '\n'.join([u"\u2502 {} \u2502".format(line.ljust(max_len)) for line in splitted_string])
-    out += u"\n\u2514" + box_line + u"\u2518"
-    print out
+    out = "\u250c" + box_line + "\u2510\n"
+    out += '\n'.join(["\u2502 {} \u2502".format(line.ljust(max_len)) for line in splitted_string])
+    out += "\n\u2514" + box_line + "\u2518"
+    print(out)
 
 
 def yes_no_prompt(query, default=None):
@@ -76,7 +76,7 @@ def yes_no_prompt(query, default=None):
 
     while True:
         try:
-            answer = raw_input("{0}{1}".format(query, available_prompts[default]))
+            answer = input("{0}{1}".format(query, available_prompts[default]))
             return distutils.strtobool(answer)
         except ValueError:
             if answer == '' and default is not None:
@@ -85,7 +85,7 @@ def yes_no_prompt(query, default=None):
 
 def chunks(sequence, n):
     """ Yield successive n-sized chunks from sequence. """
-    for i in xrange(0, len(sequence), n):
+    for i in range(0, len(sequence), n):
         yield sequence[i:i + n]
 
 
@@ -104,7 +104,7 @@ def slugify(value):
     ---------
     https://github.com/django/django/blob/1.7c3/django/utils/text.py#L436
     """
-    value = unicodedata.normalize('NFKD', unicode(value, "UTF-8")).encode('ascii', 'ignore').decode('ascii')
+    value = unicodedata.normalize('NFKD', str(value, "UTF-8")).encode('ascii', 'ignore').decode('ascii')
     value = re.sub('[^\w\s-]', '', value).strip().lower()
     return str(re.sub('[-\s]+', '_', value))
 
