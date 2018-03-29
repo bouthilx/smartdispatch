@@ -7,7 +7,8 @@ import os
 import re
 import unicodedata
 
-from subprocess import Popen, PIPE
+import subprocess
+from subprocess import Popen, PIPE, check_output
 
 
 logger = logging.getLogger(__name__)
@@ -140,8 +141,9 @@ def load_dict_from_json_file(path):
 def detect_cluster():
     # Get server status
     try:
-        output = Popen(["qstat", "-B"], stdout=PIPE).communicate()[0]
-    except OSError:
+        output = check_output(["qstat", "-B"], stderr=PIPE, timeout=5)
+    except (subprocess.CalledProcessError, OSError) as e:
+        logger.debug(str(e))
         # If qstat is not available we assume that the cluster uses slurm. 
         # (Otherwise return None)
         cluster_name = get_slurm_cluster_name()
@@ -178,10 +180,10 @@ def look_up_cluster_name_env_var():
 
 def get_slurm_cluster_name():
     try:
-        popen = Popen("sacctmgr list cluster", stdout=PIPE, shell=True)
-        stdout, stderr = popen.communicate()
-    except OSError:
-        return None
+        output = check_output(["sacctmgr", "list", "cluster"], stderr=PIPE, timeout=5)
+    except (subprocess.CalledProcessError, OSError) as e:
+        logger.debug(str(e))
+        return look_up_cluster_name_env_var()
 
     try:
         stdout = stdout.decode()
