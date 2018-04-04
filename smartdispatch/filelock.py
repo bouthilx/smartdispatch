@@ -104,7 +104,7 @@ def _fs_support_globalflock(fs):
 # Determine if we can rely on the fcntl module for locking files on the cluster.
 # Otherwise, fallback on using the directory creation atomicity as a locking mechanism.
 fs = get_fs('.')
-if _fs_support_globalflock(fs):
+if fs is not None and _fs_support_globalflock(fs):
     open_with_lock = open_with_flock
 else:
     logging.warn("Cluster does not support flock! Falling back to folder lock.")
