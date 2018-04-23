@@ -31,7 +31,7 @@ LAUNCHER = utils.get_launcher(CLUSTER_NAME)
 
 # Autoresume settings.
 TIMEOUT_EXIT_CODE = 124
-AUTORESUME_TRIGGER_AFTER = '$(($PBS_WALLTIME - 60))'  # By default, 60s before the maximum walltime.
+AUTORESUME_TRIGGER_AFTER = '$(($PBS_WALLTIME - 300))'  # By default, 5m before the maximum walltime.
 AUTORESUME_WORKER_CALL_PREFIX = 'timeout -s TERM {trigger_after} '.format(trigger_after=AUTORESUME_TRIGGER_AFTER)
 AUTORESUME_WORKER_CALL_SUFFIX = ' WORKER_PIDS+=" $!"'
 AUTORESUME_PROLOG = """
