@@ -198,7 +198,7 @@ def get_slurm_cluster_name():
         return look_up_cluster_name_env_var()
 
     try:
-        stdout = output
+        stdout = output.decode('utf-8')
         cluster_name = stdout.splitlines()[2].strip().split(' ')[0]
     except IndexError:
         logger.debug("Cannot parse: " + stdout)

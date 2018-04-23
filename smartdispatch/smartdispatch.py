@@ -185,11 +185,11 @@ def launch_jobs(launcher, pbs_filenames, cluster_name, path_job):  # pragma: no 
     for pbs_filename in pbs_filenames:
         launcher_output = check_output('PBS_FILENAME={pbs_filename} {launcher} {pbs_filename}'.format(
             launcher=launcher, pbs_filename=pbs_filename), shell=True)
-        jobs_id += [launcher_output.strip()]
+        jobs_id += [launcher_output.strip().decode('utf-8')]
 
         # On some clusters, SRMJID and PBS_JOBID don't match
         if cluster_name in ['helios']:
-            launcher_output = check_output(['qstat', '-f']).split('Job Id: ')
+            launcher_output = check_output(['qstat', '-f']).decode('utf-8').split('Job Id: ')
             for job in launcher_output:
                 if re.search(r"SRMJID:{job_id}".format(job_id=jobs_id[-1]), job):
                     pbs_job_id = re.match(r"[0-9a-zA-Z.-]*", job).group()
